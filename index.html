@@ -53,9 +53,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
 
 .wrap{
   max-width:960px;margin:0 auto;
-  padding-inline:20px;padding-block:0 48px;
+  padding-inline:20px;
   display:flex;flex-direction:column;gap:56px;
 }
+.wrap.end{padding-block:0 48px}
 
 /* ---- hero ---- */
 .hero{
@@ -110,13 +111,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
 .btn.ghost:hover{background:none;border-color:var(--fg);color:var(--fg)}
 
 /* ---- marquee ---- */
+/* full-bleed ticker: sits outside the column, spans the whole screen */
 .marquee{
   overflow:hidden;border-block:1px solid var(--line);
   padding-block:10px;user-select:none;
+  margin-block:56px;
 }
 .track{
   display:inline-flex;white-space:nowrap;
-  animation:scroll 28s linear infinite;will-change:transform;
+  animation:scroll 52s linear infinite;will-change:transform;
   font-family:var(--display);font-size:1.15rem;letter-spacing:.08em;color:var(--dim);
 }
 .track .seq{padding-right:1em}
@@ -266,6 +269,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
 }
 @media (max-width:520px){
   .wrap{gap:40px}
+  .marquee{margin-block:40px}
   .hero{padding-block:40px 4px}
   .cta-row{width:100%}
   .cta-row .btn{flex:1 1 auto;text-align:center}
@@ -307,7 +311,8 @@ footer p{margin:0;max-width:60ch}
   <a href="https://x.com/imasafecoin" target="_blank" rel="noopener">@imasafecoin ↗</a>
 </header>
 
-<main class="wrap">
+<main>
+<div class="wrap">
 
   <section class="hero">
     <img class="pfp" src="assets/safecoin.webp" alt="safe coin" draggable="false">
@@ -324,11 +329,15 @@ footer p{margin:0;max-width:60ch}
     </div>
   </section>
 
-  <div class="marquee" aria-hidden="true">
-    <div class="track">
-      <span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span><span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span>
-    </div>
+</div>
+
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    <span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span><span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span><span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span><span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span>
   </div>
+</div>
+
+<div class="wrap end">
 
   <section class="panel" id="threats">
     <div class="panel-head">
@@ -431,6 +440,7 @@ footer p{margin:0;max-width:60ch}
     </div>
   </section>
 
+</div>
 </main>
 
 <footer>
