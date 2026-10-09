@@ -180,14 +180,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
 .hud .snd:hover{color:var(--fg);border-color:var(--fg)}
 .arena{
   position:relative;overflow:hidden;
-  height:min(66vh,500px);min-height:360px;
+  height:min(66vh,500px);height:min(68dvh,520px);min-height:360px;
   touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:contain;
   cursor:crosshair;
   background:
     repeating-radial-gradient(circle at 50% 50%,rgba(233,233,226,.045) 0 1px,transparent 1px 72px),
     linear-gradient(rgba(233,233,226,.03) 1px,transparent 1px) 50% 50%/100% 72px,
     linear-gradient(90deg,rgba(233,233,226,.03) 1px,transparent 1px) 50% 50%/72px 100%;
 }
+.arena.playing{touch-action:none}
 .arena.shake{animation:shake .3s linear}
 @keyframes shake{
   0%,100%{transform:translate(0,0)}
@@ -212,6 +214,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
   display:flex;flex-direction:column;align-items:center;gap:1px;
   background:none;border:0;padding:12px;min-width:48px;min-height:48px;
   color:var(--threat);cursor:crosshair;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
 .enemy .face{
   font-family:var(--mono);font-weight:600;font-size:1.05rem;white-space:pre;
@@ -255,6 +258,29 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offse
 }
 .overlay .score-line .n{color:var(--safe)}
 
+/* ---- mobile ---- */
+@media (max-width:620px){
+  .topbar .sys{display:none}
+}
+@media (max-width:520px){
+  .wrap{gap:40px}
+  .hero{padding-block:40px 4px}
+  .cta-row{width:100%}
+  .cta-row .btn{flex:1 1 auto;text-align:center}
+  /* full-bleed game panel: every pixel of width goes to the arena */
+  #game{margin-inline:-20px;border-inline:0}
+  .hud{gap:6px 12px;padding:8px 12px;font-size:.72rem}
+  .arena{height:min(74dvh,560px);min-height:430px}
+  .panel-head{padding:10px 12px}
+  .panel-body{padding:12px}
+}
+@media (pointer:coarse){
+  .enemy{padding:16px;min-width:60px;min-height:60px}
+  .enemy .face{font-size:1.2rem}
+  .enemy .etag{font-size:.95rem}
+  .overlay .btn{padding:12px 28px}
+}
+
 /* ---- footer ---- */
 footer{
   border-top:1px solid var(--line);
@@ -275,7 +301,7 @@ footer p{margin:0;max-width:60ch}
 
 <header class="topbar">
   <span class="brand">SAFE://TERMINAL&nbsp;v5.0</span>
-  <span>SYS: <b class="ok">SECURE</b> &nbsp;·&nbsp; THREATS BLOCKED: <b class="ok">100%</b> &nbsp;·&nbsp; UPTIME: <b class="ok">FOREVER</b></span>
+  <span class="sys">SYS: <b class="ok">SECURE</b> &nbsp;·&nbsp; THREATS BLOCKED: <b class="ok">100%</b> &nbsp;·&nbsp; UPTIME: <b class="ok">FOREVER</b></span>
   <a href="https://x.com/imasafecoin" target="_blank" rel="noopener">@imasafecoin ↗</a>
 </header>
 
@@ -565,6 +591,7 @@ function start(){
   S = newState();
   clearActors();
   S.running = true;
+  arena.classList.add('playing');
   ovStart.hidden = true;
   ovOver.hidden = true;
   ovPause.hidden = true;
@@ -574,6 +601,7 @@ function start(){
 }
 function gameOver(){
   S.running = false;
+  arena.classList.remove('playing');
   for(var i = 0; i < S.enemies.length; i++){
     if(S.enemies[i].el.parentNode) S.enemies[i].el.remove();
   }
@@ -614,7 +642,9 @@ function loop(ts){
   var r = arena.getBoundingClientRect();
   var cx = r.width / 2, cy = r.height / 2;
   var coinR = coin.offsetWidth / 2;
-  var mult = 1 + (S.wave - 1) * 0.12;
+  /* smaller arena = shorter distances, so scale speed down to keep it fair on phones */
+  var sizeScale = Math.max(0.55, Math.min(1, Math.min(r.width, r.height) / 520));
+  var mult = (1 + (S.wave - 1) * 0.12) * sizeScale;
 
   for(var i = S.enemies.length - 1; i >= 0; i--){
     var e = S.enemies[i];
@@ -629,7 +659,7 @@ function loop(ts){
       if(e.qT > 1.1){
         e.qT = 0;
         var a = Math.random() * Math.PI * 2;
-        var j = 30 + Math.random() * 40;
+        var j = (30 + Math.random() * 40) * sizeScale;
         var nx = e.x + Math.cos(a) * j, ny = e.y + Math.sin(a) * j;
         var ndx = cx - nx, ndy = cy - ny;
         if(Math.sqrt(ndx * ndx + ndy * ndy) > coinR + 34 && nx > -30 && nx < r.width + 30 && ny > -30 && ny < r.height + 30){
@@ -650,13 +680,24 @@ function loop(ts){
 document.getElementById('startBtn').addEventListener('click', start);
 document.getElementById('retryBtn').addEventListener('click', start);
 document.getElementById('resumeBtn').addEventListener('click', function(){
-  if(S){ S.running = true; }
+  if(S){ S.running = true; arena.classList.add('playing'); }
   ovPause.hidden = true;
 });
 document.addEventListener('visibilitychange', function(){
   if(document.hidden && S && S.running){
     S.running = false;
+    arena.classList.remove('playing');
     ovPause.hidden = false;
+  }
+});
+window.addEventListener('resize', function(){
+  if(!S || !S.enemies.length) return;
+  var r = arena.getBoundingClientRect();
+  for(var i = 0; i < S.enemies.length; i++){
+    var e = S.enemies[i];
+    e.x = Math.min(Math.max(e.x, -28), r.width + 28);
+    e.y = Math.min(Math.max(e.y, -28), r.height + 28);
+    place(e);
   }
 });
 
