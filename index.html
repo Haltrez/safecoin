@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAFECOIN</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* layout: one terminal screen, single column, panels drawn like system windows */
+:root{
+  --bg:#060608;
+  --panel:#0b0c0e;
+  --fg:#e9e9e2;
+  --dim:#8f9088;
+  --line:#2b2c2f;
+  --threat:#ff5c47;
+  --safe:#5bdc8e;
+  --display:'VT323',monospace;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.55;
+}
+.crt{
+  position:fixed;inset:0;pointer-events:none;z-index:60;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+  opacity:.4;
+}
+a{color:var(--fg)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--safe);outline-offset:2px}
+::selection{background:var(--fg);color:var(--bg)}
+
+.topbar{
+  display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;
+  padding:10px 20px;border-bottom:1px solid var(--line);
+  font-size:.82rem;letter-spacing:.06em;color:var(--dim);
+}
+.topbar .brand{color:var(--fg);font-weight:600}
+.ok{color:var(--safe);font-weight:600}
+.topbar a{color:var(--dim);text-decoration:none}
+.topbar a:hover{color:var(--fg)}
+
+.wrap{
+  max-width:960px;margin:0 auto;
+  padding-inline:20px;padding-block:0 48px;
+  display:flex;flex-direction:column;gap:56px;
+}
+
+/* ---- hero ---- */
+.hero{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:20px;padding-block:56px 8px;
+}
+.pfp{
+  width:clamp(150px,38vw,220px);height:clamp(150px,38vw,220px);
+  border-radius:50%;border:2px solid var(--line);
+  box-shadow:0 0 0 6px var(--bg),0 0 0 7px var(--line),0 0 60px rgba(233,233,226,.08);
+  max-width:100%;
+}
+.tick{
+  font-family:var(--display);
+  font-size:clamp(2.6rem,9vw,4.2rem);
+  line-height:1;margin:0;letter-spacing:.04em;
+  text-wrap:balance;
+}
+.tick .dollar{color:var(--safe)}
+.tagline{
+  margin:0;max-width:34ch;
+  font-family:var(--display);
+  font-size:clamp(1.3rem,4.5vw,1.7rem);
+  line-height:1.3;color:var(--dim);
+  text-wrap:balance;
+}
+.tagline s{color:var(--threat);text-decoration-thickness:2px}
+.tagline b{color:var(--fg);font-weight:400}
+.ca{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+  font-size:.82rem;color:var(--dim);
+}
+.ca code{
+  background:var(--panel);border:1px solid var(--line);
+  padding:4px 10px;letter-spacing:.04em;
+}
+.ca button{
+  font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;
+  background:none;border:1px solid var(--line);color:var(--dim);
+  padding:4px 12px;cursor:pointer;
+}
+.ca button:hover{color:var(--fg);border-color:var(--fg)}
+.ca button.denied{color:var(--threat);border-color:var(--threat)}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:6px}
+.btn{
+  font-family:var(--display);font-size:1.25rem;letter-spacing:.06em;
+  border:1px solid var(--fg);color:var(--fg);background:none;
+  padding:8px 22px;text-decoration:none;cursor:pointer;
+}
+.btn:hover{background:var(--fg);color:var(--bg)}
+.btn.ghost{border-color:var(--line);color:var(--dim)}
+.btn.ghost:hover{background:none;border-color:var(--fg);color:var(--fg)}
+
+/* ---- marquee ---- */
+.marquee{
+  overflow:hidden;border-block:1px solid var(--line);
+  padding-block:10px;user-select:none;
+}
+.track{
+  display:inline-flex;white-space:nowrap;
+  animation:scroll 28s linear infinite;will-change:transform;
+  font-family:var(--display);font-size:1.15rem;letter-spacing:.08em;color:var(--dim);
+}
+.track .seq{padding-right:1em}
+.track .sep{color:var(--safe);padding-inline:.6em}
+@keyframes scroll{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){
+  .track{animation:none}
+  .shake{animation:none !important}
+}
+
+/* ---- panels ---- */
+.panel{border:1px solid var(--line);background:var(--panel)}
+.panel-head{
+  display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between;
+  border-bottom:1px solid var(--line);padding:10px 16px;
+}
+.panel-head h2{
+  margin:0;font-family:var(--display);font-weight:400;
+  font-size:1.45rem;letter-spacing:.08em;
+}
+.panel-head .meta{font-size:.75rem;letter-spacing:.1em;color:var(--dim)}
+.panel-body{padding:16px}
+
+/* threat rows */
+.trow{
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;
+  padding:14px 4px;border-bottom:1px dashed var(--line);
+}
+.trow:last-child{border-bottom:0}
+.trow .name{font-weight:600;letter-spacing:.06em}
+.trow .name::before{content:'▸ ';color:var(--threat)}
+.trow p{margin:2px 0 0;color:var(--dim);font-size:.85rem;max-width:52ch}
+.pill{
+  font-family:var(--display);font-size:1.05rem;letter-spacing:.08em;
+  color:var(--safe);border:1px solid var(--safe);padding:2px 12px;
+  white-space:nowrap;
+}
+
+/* security stack */
+.stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card{border:1px dashed var(--line);padding:14px}
+.card h3{
+  margin:0 0 6px;font-family:var(--display);font-weight:400;
+  font-size:1.2rem;letter-spacing:.08em;color:var(--safe);
+}
+.card p{margin:0;color:var(--dim);font-size:.85rem}
+
+/* ---- game ---- */
+.hud{
+  display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;
+  padding:10px 16px;border-bottom:1px solid var(--line);
+  font-size:.8rem;letter-spacing:.08em;color:var(--dim);
+  font-variant-numeric:tabular-nums;
+}
+.hud b{color:var(--fg);font-weight:600}
+.hud .bar{color:var(--safe);letter-spacing:0}
+.hud .bar.mid{color:#ffd166}
+.hud .bar.low{color:var(--threat)}
+.hud .snd{
+  margin-left:auto;background:none;border:1px solid var(--line);color:var(--dim);
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;padding:3px 10px;cursor:pointer;
+}
+.hud .snd:hover{color:var(--fg);border-color:var(--fg)}
+.arena{
+  position:relative;overflow:hidden;
+  height:min(66vh,500px);min-height:360px;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  cursor:crosshair;
+  background:
+    repeating-radial-gradient(circle at 50% 50%,rgba(233,233,226,.045) 0 1px,transparent 1px 72px),
+    linear-gradient(rgba(233,233,226,.03) 1px,transparent 1px) 50% 50%/100% 72px,
+    linear-gradient(90deg,rgba(233,233,226,.03) 1px,transparent 1px) 50% 50%/72px 100%;
+}
+.arena.shake{animation:shake .3s linear}
+@keyframes shake{
+  0%,100%{transform:translate(0,0)}
+  25%{transform:translate(-5px,3px)}
+  50%{transform:translate(4px,-4px)}
+  75%{transform:translate(-3px,-2px)}
+}
+.coin{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:clamp(86px,24%,124px);height:auto;border-radius:50%;
+  border:2px solid var(--line);
+  box-shadow:0 0 0 5px var(--bg),0 0 0 6px var(--line),0 0 44px rgba(91,220,142,.12);
+  pointer-events:none;max-width:100%;
+}
+.coin.hit{animation:coinhit .4s linear}
+@keyframes coinhit{
+  0%,100%{box-shadow:0 0 0 5px var(--bg),0 0 0 6px var(--line),0 0 44px rgba(91,220,142,.12)}
+  50%{box-shadow:0 0 0 5px var(--bg),0 0 0 6px var(--threat),0 0 60px rgba(255,92,71,.5)}
+}
+.enemy{
+  position:absolute;left:0;top:0;z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  background:none;border:0;padding:12px;min-width:48px;min-height:48px;
+  color:var(--threat);cursor:crosshair;touch-action:manipulation;
+}
+.enemy .face{
+  font-family:var(--mono);font-weight:600;font-size:1.05rem;white-space:pre;
+  text-shadow:0 0 10px rgba(255,92,71,.5);
+}
+.enemy .etag{
+  font-family:var(--display);font-size:.85rem;letter-spacing:.1em;color:var(--dim);
+}
+.enemy.rekt{color:var(--fg);transform-origin:center;transition:opacity .25s}
+.enemy.rekt .face{text-shadow:0 0 14px rgba(233,233,226,.9)}
+.enemy.blink{opacity:.35}
+.pop{
+  position:absolute;z-index:4;transform:translate(-50%,-50%);
+  font-family:var(--display);font-size:1.1rem;letter-spacing:.06em;color:var(--safe);
+  pointer-events:none;animation:rise .65s ease-out forwards;white-space:nowrap;
+}
+.pop.bad{color:var(--threat)}
+@keyframes rise{to{transform:translate(-50%,-50%) translateY(-30px);opacity:0}}
+.banner{
+  position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);z-index:5;
+  font-family:var(--display);font-size:2rem;letter-spacing:.14em;color:var(--fg);
+  pointer-events:none;opacity:0;
+}
+.banner.show{animation:bannerfade 1.4s ease-out forwards}
+@keyframes bannerfade{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}
+.overlay{
+  position:absolute;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  text-align:center;padding:24px;
+  background:rgba(6,6,8,.88);
+}
+.overlay h3{
+  margin:0;font-family:var(--display);font-weight:400;
+  font-size:clamp(1.8rem,6vw,2.6rem);letter-spacing:.1em;
+}
+.overlay h3.breach{color:var(--threat)}
+.overlay p{margin:0;color:var(--dim);max-width:40ch;font-size:.9rem}
+.overlay .score-line{
+  font-family:var(--display);font-size:1.4rem;letter-spacing:.1em;color:var(--fg);
+  font-variant-numeric:tabular-nums;
+}
+.overlay .score-line .n{color:var(--safe)}
+
+/* ---- footer ---- */
+footer{
+  border-top:1px solid var(--line);
+  padding:28px 20px 36px;text-align:center;color:var(--dim);font-size:.8rem;
+  display:flex;flex-direction:column;gap:10px;align-items:center;
+}
+footer .xbig{
+  font-family:var(--display);font-size:1.4rem;letter-spacing:.08em;
+  color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line);
+}
+footer .xbig:hover{border-color:var(--fg)}
+footer p{margin:0;max-width:60ch}
+</style>
+</head>
+<body>
+
+<div class="crt" aria-hidden="true"></div>
+
+<header class="topbar">
+  <span class="brand">SAFE://TERMINAL&nbsp;v5.0</span>
+  <span>SYS: <b class="ok">SECURE</b> &nbsp;·&nbsp; THREATS BLOCKED: <b class="ok">100%</b> &nbsp;·&nbsp; UPTIME: <b class="ok">FOREVER</b></span>
+  <a href="https://x.com/imasafecoin" target="_blank" rel="noopener">@imasafecoin ↗</a>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <img class="pfp" src="assets/safecoin.webp" alt="safe coin" draggable="false">
+    <h1 class="tick"><span class="dollar">$</span>SAFECOIN</h1>
+    <p class="tagline"><s>drains</s>. <s>quantum hacks</s>. <s>rugs</s>.<br><b>things safe coin does not worry about.</b></p>
+    <div class="ca">
+      <span>CA:</span>
+      <code id="ca">[ REDACTED FOR SAFETY ]</code>
+      <button id="caCopy" type="button">COPY</button>
+    </div>
+    <div class="cta-row">
+      <a class="btn" href="#game">RUN DEFENSE PROTOCOL ▸</a>
+      <a class="btn ghost" href="https://x.com/imasafecoin" target="_blank" rel="noopener">FOLLOW THE SAFETY</a>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span><span class="seq">0 DRAINS<span class="sep">✚</span>0 RUGS<span class="sep">✚</span>0 QUANTUM HACKS<span class="sep">✚</span>VAULT: LOCKED<span class="sep">✚</span>SAFU LEVEL: MAXIMUM<span class="sep">✚</span>FLOOR: HARDWOOD<span class="sep">✚</span></span>
+    </div>
+  </div>
+
+  <section class="panel" id="threats">
+    <div class="panel-head">
+      <h2>THREAT ASSESSMENT</h2>
+      <span class="meta">LAST SCAN: JUST NOW · NEXT SCAN: CONSTANTLY</span>
+    </div>
+    <div class="panel-body">
+      <div class="trow">
+        <div>
+          <span class="name">DRAINS</span>
+          <p>the wallet is a vault inside a vault. the second vault? also inside a vault.</p>
+        </div>
+        <span class="pill">NOT WORRIED</span>
+      </div>
+      <div class="trow">
+        <div>
+          <span class="name">QUANTUM HACKS</span>
+          <p>we simply do not observe the chart, so it cannot collapse.</p>
+        </div>
+        <span class="pill">NOT WORRIED</span>
+      </div>
+      <div class="trow">
+        <div>
+          <span class="name">RUGS</span>
+          <p>floor inspected daily. it is hardwood.</p>
+        </div>
+        <span class="pill">NOT WORRIED</span>
+      </div>
+      <div class="trow">
+        <div>
+          <span class="name">FUD</span>
+          <p>cannot hear it through the vault walls.</p>
+        </div>
+        <span class="pill">NOT WORRIED</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="game">
+    <div class="panel-head">
+      <h2>SAFE DEFENSE PROTOCOL</h2>
+      <span class="meta">MINIGAME.EXE · CLICK THE BAD GUYS</span>
+    </div>
+    <div class="hud">
+      <span>SCORE <b id="hudScore">0000</b></span>
+      <span>INTEGRITY [<b id="hudBar" class="bar">██████████</b>]</span>
+      <span>WAVE <b id="hudWave">01</b></span>
+      <span>BEST <b id="hudBest">0000</b></span>
+      <button class="snd" id="sndBtn" type="button" aria-pressed="true">SND:ON</button>
+    </div>
+    <div class="arena" id="arena">
+      <img class="coin" id="coin" src="assets/safecoin.webp" alt="" draggable="false">
+      <div class="banner" id="banner" aria-hidden="true"></div>
+
+      <div class="overlay" id="ovStart">
+        <h3>ATTACKERS INBOUND</h3>
+        <p>drainers, hackers, rug pullers and quantum bugs are coming for the coin. click or tap them before they touch it. the coin must stay safe. the coin is always safe.</p>
+        <button class="btn" id="startBtn" type="button">[ INITIATE ]</button>
+      </div>
+
+      <div class="overlay" id="ovPause" hidden>
+        <h3>PAUSED</h3>
+        <p>threats frozen. they can wait. safety cannot.</p>
+        <button class="btn" id="resumeBtn" type="button">[ RESUME ]</button>
+      </div>
+
+      <div class="overlay" id="ovOver" hidden>
+        <h3 class="breach">INTEGRITY BREACH</h3>
+        <p>(this has never happened before. do not tell anyone.)</p>
+        <div class="score-line">SCORE <span class="n" id="finalScore">0000</span> · BEST <span class="n" id="finalBest">0000</span></div>
+        <button class="btn" id="retryBtn" type="button">[ RE-INITIATE ]</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="stack">
+    <div class="panel-head">
+      <h2>SECURITY STACK</h2>
+      <span class="meta">AUDITED BY: THE COIN ITSELF · RESULT: SAFE</span>
+    </div>
+    <div class="panel-body">
+      <div class="stack">
+        <div class="card">
+          <h3>COLD STORAGE</h3>
+          <p>the keys are in a freezer. the freezer is unplugged. the plug is also in a freezer.</p>
+        </div>
+        <div class="card">
+          <h3>2FA</h3>
+          <p>two guys, fred and alberto. they say "who is this" to everyone. including us.</p>
+        </div>
+        <div class="card">
+          <h3>QUANTUM RESISTANCE</h3>
+          <p>the coin is simply too dense to entangle. shor's algorithm took one look and left.</p>
+        </div>
+        <div class="card">
+          <h3>ANTI-RUG FIELD</h3>
+          <p>there is no rug. there was never a rug. the floor is hardwood (see threat assessment).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <a class="xbig" href="https://x.com/imasafecoin" target="_blank" rel="noopener">x.com/imasafecoin</a>
+  <p>$SAFECOIN is a meme coin. this is not financial advice. it is safety advice.</p>
+  <p>© 2026 safe coin. so safe.</p>
+</footer>
+
+<script>
+(function(){
+'use strict';
+var reduced = false;
+try{ reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+
+/* ---- CA copy joke ---- */
+var caBtn = document.getElementById('caCopy');
+var caTimer = 0;
+caBtn.addEventListener('click', function(){
+  caBtn.textContent = 'NICE TRY, DRAINER';
+  caBtn.classList.add('denied');
+  clearTimeout(caTimer);
+  caTimer = setTimeout(function(){
+    caBtn.textContent = 'COPY';
+    caBtn.classList.remove('denied');
+  }, 1600);
+});
+
+/* ---- sound ---- */
+var soundOn = true;
+var actx = null;
+var sndBtn = document.getElementById('sndBtn');
+sndBtn.addEventListener('click', function(){
+  soundOn = !soundOn;
+  sndBtn.textContent = soundOn ? 'SND:ON' : 'SND:OFF';
+  sndBtn.setAttribute('aria-pressed', String(soundOn));
+});
+function beep(freq, dur, type, vol){
+  if(!soundOn) return;
+  try{
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || 'square';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.035, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+
+/* ---- game ---- */
+var arena = document.getElementById('arena');
+var coin = document.getElementById('coin');
+var hudScore = document.getElementById('hudScore');
+var hudBar = document.getElementById('hudBar');
+var hudWave = document.getElementById('hudWave');
+var hudBest = document.getElementById('hudBest');
+var banner = document.getElementById('banner');
+var ovStart = document.getElementById('ovStart');
+var ovPause = document.getElementById('ovPause');
+var ovOver = document.getElementById('ovOver');
+var finalScore = document.getElementById('finalScore');
+var finalBest = document.getElementById('finalBest');
+
+var TYPES = [
+  { tag:'DRAINER',    face:'[$_$]',  speed:30, pts:10 },
+  { tag:'HACKER',     face:'{>_>}',  speed:44, pts:15 },
+  { tag:'RUG PULLER', face:'(%_%)≋', speed:24, pts:10 },
+  { tag:'QUANTUM BUG',face:'<Ψ_Ψ>',  speed:54, pts:25, q:true }
+];
+
+var best = 0;
+try{ best = parseInt(localStorage.getItem('safecoin_best') || '0', 10) || 0; }catch(e){}
+
+var S = null;
+function newState(){
+  return { running:false, score:0, integrity:100, wave:1, waveT:0, spawnT:0.9, enemies:[] };
+}
+function fmt(n){ return ('0000' + n).slice(-4); }
+function hud(){
+  hudScore.textContent = fmt(S.score);
+  hudWave.textContent = ('00' + S.wave).slice(-2);
+  hudBest.textContent = fmt(Math.max(best, S.score));
+  var blocks = Math.max(0, Math.round(S.integrity / 10));
+  hudBar.textContent = new Array(blocks + 1).join('█') + new Array(10 - blocks + 1).join('░');
+  hudBar.className = 'bar' + (S.integrity <= 30 ? ' low' : (S.integrity <= 60 ? ' mid' : ''));
+}
+function showBanner(txt){
+  banner.textContent = txt;
+  banner.classList.remove('show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+}
+function pop(x, y, txt, bad){
+  var p = document.createElement('span');
+  p.className = 'pop' + (bad ? ' bad' : '');
+  p.textContent = txt;
+  p.style.left = x + 'px';
+  p.style.top = y + 'px';
+  arena.appendChild(p);
+  p.addEventListener('animationend', function(){ p.remove(); });
+  setTimeout(function(){ if(p.parentNode) p.remove(); }, 1000);
+}
+function place(e){
+  e.el.style.transform = 'translate(-50%,-50%) translate(' + e.x + 'px,' + e.y + 'px)';
+}
+function spawn(){
+  var r = arena.getBoundingClientRect();
+  var type = TYPES[(Math.random() * TYPES.length) | 0];
+  if(type.q && S.wave < 2) type = TYPES[(Math.random() * 3) | 0];
+  var side = (Math.random() * 4) | 0, x, y;
+  if(side === 0){ x = Math.random() * r.width; y = -24; }
+  else if(side === 1){ x = r.width + 24; y = Math.random() * r.height; }
+  else if(side === 2){ x = Math.random() * r.width; y = r.height + 24; }
+  else { x = -24; y = Math.random() * r.height; }
+  var el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'enemy';
+  var face = document.createElement('span');
+  face.className = 'face';
+  face.textContent = type.face;
+  var tag = document.createElement('span');
+  tag.className = 'etag';
+  tag.textContent = type.tag;
+  el.appendChild(face); el.appendChild(tag);
+  var e = { el:el, x:x, y:y, type:type, qT:0, dead:false };
+  el.addEventListener('pointerdown', function(ev){ ev.preventDefault(); kill(e); }, { passive:false });
+  arena.appendChild(el);
+  place(e);
+  S.enemies.push(e);
+}
+function kill(e){
+  if(!S || !S.running || e.dead) return;
+  e.dead = true;
+  S.score += e.type.pts;
+  beep(640 + Math.random() * 320, 0.07);
+  pop(e.x, e.y, '+' + e.type.pts + ' REKT');
+  e.el.classList.add('rekt');
+  e.el.disabled = true;
+  e.el.style.opacity = '0';
+  setTimeout(function(){ e.el.remove(); }, 260);
+  hud();
+}
+function hitCoin(e, cx, cy){
+  e.dead = true;
+  e.el.remove();
+  S.integrity -= 25;
+  beep(110, 0.18, 'sawtooth', 0.055);
+  coin.classList.remove('hit'); void coin.offsetWidth; coin.classList.add('hit');
+  if(!reduced){ arena.classList.remove('shake'); void arena.offsetWidth; arena.classList.add('shake'); }
+  pop(cx, cy - 70, '-25 INTEGRITY', true);
+  hud();
+  if(S.integrity <= 0) gameOver();
+}
+function clearActors(){
+  var nodes = arena.querySelectorAll('.enemy,.pop');
+  for(var i = 0; i < nodes.length; i++) nodes[i].remove();
+}
+function start(){
+  S = newState();
+  clearActors();
+  S.running = true;
+  ovStart.hidden = true;
+  ovOver.hidden = true;
+  ovPause.hidden = true;
+  hud();
+  showBanner('WAVE 01');
+  beep(520, 0.08);
+}
+function gameOver(){
+  S.running = false;
+  for(var i = 0; i < S.enemies.length; i++){
+    if(S.enemies[i].el.parentNode) S.enemies[i].el.remove();
+  }
+  S.enemies.length = 0;
+  if(S.score > best){
+    best = S.score;
+    try{ localStorage.setItem('safecoin_best', String(best)); }catch(e){}
+  }
+  finalScore.textContent = fmt(S.score);
+  finalBest.textContent = fmt(best);
+  ovOver.hidden = false;
+  beep(220, 0.3, 'sawtooth', 0.05);
+  setTimeout(function(){ beep(140, 0.4, 'sawtooth', 0.05); }, 180);
+}
+
+var last = 0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  var dt = Math.min(0.05, (ts - last) / 1000);
+  last = ts;
+  if(!S || !S.running) return;
+
+  S.waveT += dt;
+  S.spawnT -= dt;
+  if(S.waveT > 14){
+    S.waveT = 0;
+    S.wave++;
+    showBanner('WAVE ' + ('00' + S.wave).slice(-2));
+    beep(440, 0.1);
+    hud();
+  }
+  var interval = Math.max(0.42, 1.25 - (S.wave - 1) * 0.09);
+  if(S.spawnT <= 0 && S.enemies.length < 14){
+    spawn();
+    S.spawnT = interval * (0.7 + Math.random() * 0.6);
+  }
+
+  var r = arena.getBoundingClientRect();
+  var cx = r.width / 2, cy = r.height / 2;
+  var coinR = coin.offsetWidth / 2;
+  var mult = 1 + (S.wave - 1) * 0.12;
+
+  for(var i = S.enemies.length - 1; i >= 0; i--){
+    var e = S.enemies[i];
+    if(e.dead){ S.enemies.splice(i, 1); continue; }
+    var dx = cx - e.x, dy = cy - e.y;
+    var d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var sp = e.type.speed * mult;
+    e.x += dx / d * sp * dt;
+    e.y += dy / d * sp * dt;
+    if(e.type.q){
+      e.qT += dt;
+      if(e.qT > 1.1){
+        e.qT = 0;
+        var a = Math.random() * Math.PI * 2;
+        var j = 30 + Math.random() * 40;
+        var nx = e.x + Math.cos(a) * j, ny = e.y + Math.sin(a) * j;
+        var ndx = cx - nx, ndy = cy - ny;
+        if(Math.sqrt(ndx * ndx + ndy * ndy) > coinR + 34 && nx > -30 && nx < r.width + 30 && ny > -30 && ny < r.height + 30){
+          e.x = nx; e.y = ny;
+          e.el.classList.add('blink');
+          (function(el){ setTimeout(function(){ el.classList.remove('blink'); }, 140); })(e.el);
+        }
+      }
+    }
+    place(e);
+    if(d < coinR + 16){
+      hitCoin(e, cx, cy);
+      S.enemies.splice(i, 1);
+    }
+  }
+}
+
+document.getElementById('startBtn').addEventListener('click', start);
+document.getElementById('retryBtn').addEventListener('click', start);
+document.getElementById('resumeBtn').addEventListener('click', function(){
+  if(S){ S.running = true; }
+  ovPause.hidden = true;
+});
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && S && S.running){
+    S.running = false;
+    ovPause.hidden = false;
+  }
+});
+
+/* ---- boot (hot-reload aware) ---- */
+function boot(data){
+  if(data && typeof data.best === 'number' && data.best > best) best = data.best;
+  S = newState();
+  hud();
+  requestAnimationFrame(loop);
+}
+var hot = (window.claude && window.claude.hot) || null;
+if(hot && hot.snapshot) hot.snapshot(function(){ return { best: best }; });
+if(hot && hot.ready) hot.ready(boot);
+else boot((hot && hot.data) || {});
+})();
+</script>
+</body>
+</html>
