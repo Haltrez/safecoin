@@ -18,11 +18,9 @@ Cloudflare Pages). No build step.
 
 ## To fill in later
 
-- **Contract address**: the `CA: [ REDACTED FOR SAFETY ]` line in `index.html`
-  is a placeholder joke — replace the text inside `<code id="ca">` with the real
-  CA and the COPY button starts copying it automatically.
 - **Buy link**: add a DEX/launchpad link next to the hero buttons.
 
 ## Links
 
+- CA: `7ahhgwZXrx8mQTkKLnrSezchCXiUJezGSD393p3Tpump`
 - X: https://x.com/safecoindotfun
