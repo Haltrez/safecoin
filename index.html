@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SAFECOIN</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 /* layout: one terminal screen, single column, panels drawn like system windows */
@@ -443,17 +445,46 @@ footer p{margin:0;max-width:60ch}
 var reduced = false;
 try{ reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 
-/* ---- CA copy joke ---- */
+/* ---- CA copy: joke while the placeholder is in, real copy once the CA is set ---- */
+var caCode = document.getElementById('ca');
 var caBtn = document.getElementById('caCopy');
 var caTimer = 0;
-caBtn.addEventListener('click', function(){
-  caBtn.textContent = 'NICE TRY, DRAINER';
-  caBtn.classList.add('denied');
+function caFlash(txt, denied){
+  caBtn.textContent = txt;
+  caBtn.classList.toggle('denied', !!denied);
   clearTimeout(caTimer);
   caTimer = setTimeout(function(){
     caBtn.textContent = 'COPY';
     caBtn.classList.remove('denied');
   }, 1600);
+}
+function caSelect(){
+  try{
+    var range = document.createRange();
+    range.selectNodeContents(caCode);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }catch(e){}
+}
+caBtn.addEventListener('click', function(){
+  var ca = caCode.textContent.trim();
+  if(ca.indexOf('REDACTED') !== -1){
+    caFlash('NICE TRY, DRAINER', true);
+    return;
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ca).then(
+        function(){ caFlash('COPIED. STAY SAFE'); },
+        function(){ caSelect(); caFlash('SELECT + COPY', true); }
+      );
+    }else{
+      caSelect(); caFlash('SELECT + COPY', true);
+    }
+  }catch(e){
+    caSelect(); caFlash('SELECT + COPY', true);
+  }
 });
 
 /* ---- sound ---- */
