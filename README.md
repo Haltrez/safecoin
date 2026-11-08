@@ -22,5 +22,5 @@ Cloudflare Pages). No build step.
 
 ## Links
 
-- CA: `7ahhgwZXrx8mQTkKLnrSezchCXiUJezGSD393p3Tpump`
+- CA: `3kbJo2HMYAUetj2JMLs54t43xuxqdxa61kMymJH2pump`
 - X: https://x.com/safecoindotfun
